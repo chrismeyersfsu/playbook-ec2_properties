@@ -1,0 +1,21 @@
+# Showcase "inheriting" (assigning) multiple properties from one host to a dynamically added one
+#
+- hosts: ec2_instances
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Inherit all
+      add_host:
+        name: "{{ item }}"
+        ansible_connection: 'local'
+        image: "{{ hostvars[item].image }}"
+        group_id: "{{ hostvars[item].group_id }}"
+        groups: dynamic_hosts
+        tags: "{{ hostvars[item].tags }}"
+      with_items: play_hosts
+
+- hosts: dynamic_hosts
+  gather_facts: false
+  tasks:
+    - ping:
+    - debug: var=hostvars[inventory_hostname]

@@ -1,0 +1,10 @@
+localhost ansible_connection=local ansible_python_interpreter=/usr/local/bin/python
+
+[ec2_instances]
+ec2host1 image="ami-2ccc7a44"  tags="{ 'foo': 'bar', 'name': 'ec2host1' }" group_id='sg-07bb906d'
+ec2host2 image="ami-2ccc7a44"  tags="{ 'foo': 'bar', 'name': 'ec2host2' }" group_id='sg-07bb906d'
+
+[ec2_instances:vars]
+# mac osx brew :(
+ansible_python_interpreter=/usr/local/bin/python
+

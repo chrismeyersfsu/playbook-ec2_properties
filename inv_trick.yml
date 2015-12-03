@@ -1,0 +1,49 @@
+# Use "template" inventory hosts to represent the wanted ec2 instances
+#
+- hosts: ec2_instances
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Launch Instance
+      ec2:
+        group_id: "{{ hostvars[inventory_hostname].group_id }}"
+        count: 1
+        instance_type: 'm3.medium'
+        image: '{{ hostvars[inventory_hostname].image }}'
+        wait: true
+        region: 'us-east-1'
+        #keypair: '{{ keypair }}'
+        aws_access_key: "{{ aws_access_key|default(lookup('env', 'AWS_ACCESS_KEY')) }}"
+        aws_secret_key: "{{ aws_secret_key|default(lookup('env', 'AWS_SECRET_KEY')) }}"
+        instance_tags: "{{ hostvars[inventory_hostname].tags }}"
+      register: ec2
+
+    - name: Wait for SSH
+      wait_for:
+        host: "{{ item['instances'][0]['public_ip'] }}"
+        port: 22
+        delay: 10
+        timeout: 320
+        state: started
+      with_items: ec2.results
+
+    - name: Wait a little longer for centos
+      pause: seconds=20
+
+    - name: Add hosts group temporary inventory group with pem path
+      add_host:
+        name: "{{ item.1.platform }} {{ ec2.results[item.0]['instances'][0]['public_ip'] }}"
+        groups: dynamic_hosts
+        ansible_ssh_host: "{{ ec2.results[item.0]['instances'][0]['public_ip'] }}"
+        ansible_ssh_private_key_file: '{{ pem_path }}'
+        ansible_ssh_user: "{{ item.1.ssh_user }}"
+        ec2_vars: "{{ ec2.results[item.0]['instances'][0] }}"
+        ec2_instance_ids: "{{ ec2.results[item.0]['instance_ids'] }}"
+      with_indexed_items: ec2_instances
+
+- hosts: dynamic_hosts
+  tasks:
+    - ping:
+
+
+
