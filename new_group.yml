@@ -7,9 +7,11 @@
         image: "ami-2ccc7a44" # Ubuntu 12.04
         tags: ['foo1', 'foo2']
         group_id: 'sg-07bb906d' # jenkins-slave_new
+        ssh_user: "ubuntu"
       - name: "machine2"
         image: "ami-2ccc7a44" # Ubuntu 12.04
         tags: ['foo1', 'foo2']
+        ssh_user: "ubuntu"
         group_id: 'sg-07bb906d' # jenkins-slave_new
   tasks:
     - name: Launch Instance
